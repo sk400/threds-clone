@@ -13,6 +13,7 @@ const connectToDB = async () => {
       console.log("Connection already established to MongoDB");
     } else {
       await mongoose.connect(process.env.MONGO_URL);
+      isConnected = true;
       console.log("Connected to MongoDB");
     }
   } catch (error: any) {

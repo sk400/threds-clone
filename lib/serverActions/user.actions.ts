@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import User from "../models/User.model";
 import connectToDB from "../mongoose";
+import { SortOrder, FilterQuery } from "mongoose";
 
 interface UserData {
   userId: string;
@@ -16,7 +17,7 @@ interface UserData {
 
 export const fetchUser = async (userId: string) => {
   try {
-    await connectToDB();
+    connectToDB();
 
     const user = await User.findOne({ id: userId });
 
@@ -36,7 +37,7 @@ export const updateUser = async ({
   path,
 }: UserData) => {
   try {
-    await connectToDB();
+    connectToDB();
 
     await User.findOneAndUpdate(
       { id: userId },
@@ -56,5 +57,55 @@ export const updateUser = async ({
   } catch (error) {
     console.log(error);
     throw new Error("Failed to update the user data.");
+  }
+};
+
+export const fetchUsers = async ({
+  userId,
+  searchString,
+  pageSize,
+  pageNumber,
+  sortBy = "desc",
+}: {
+  userId: string;
+  searchString: string;
+  pageSize?: number;
+  pageNumber?: number;
+  sortBy?: SortOrder;
+}) => {
+  try {
+    const skipAmount = pageSize && pageNumber ? pageSize * (pageNumber - 1) : 0;
+
+    const query: FilterQuery<typeof User> = {
+      id: { $ne: userId },
+    };
+
+    if (searchString?.trim() !== "") {
+      const regExp = new RegExp(searchString, "i");
+
+      query.$or = [
+        { username: { $regex: regExp } },
+        { name: { $regex: regExp } },
+      ];
+    }
+
+    const userQuery = User.find(query)
+      .sort({ createdAt: sortBy })
+      .skip(skipAmount);
+
+    if (pageSize) {
+      userQuery.limit(pageSize);
+    }
+
+    const users = await userQuery.exec();
+
+    const totalUserCounts = await User.countDocuments(query);
+
+    const isNext = totalUserCounts > skipAmount + users?.length;
+
+    return { users, isNext };
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to fetch the users.");
   }
 };
