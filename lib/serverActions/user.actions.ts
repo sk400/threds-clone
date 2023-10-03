@@ -69,7 +69,7 @@ export const fetchUsers = async ({
   sortBy = "desc",
 }: {
   userId: string;
-  searchString: string;
+  searchString: string | undefined;
   pageSize?: number;
   pageNumber?: number;
   sortBy?: SortOrder;
@@ -83,13 +83,15 @@ export const fetchUsers = async ({
       id: { $ne: userId },
     };
 
-    if (searchString?.trim() !== "") {
-      const regExp = new RegExp(searchString, "i");
+    if (searchString) {
+      if (searchString?.trim() !== "") {
+        const regExp = new RegExp(searchString, "i");
 
-      query.$or = [
-        { username: { $regex: regExp } },
-        { name: { $regex: regExp } },
-      ];
+        query.$or = [
+          { username: { $regex: regExp } },
+          { name: { $regex: regExp } },
+        ];
+      }
     }
 
     const userQuery = User.find(query)
