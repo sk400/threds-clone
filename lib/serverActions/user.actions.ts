@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import User from "../models/User.model";
 import connectToDB from "../mongoose";
 import { SortOrder, FilterQuery } from "mongoose";
+import Thread from "../models/thread.model";
 
 interface UserData {
   userId: string;
@@ -74,6 +75,8 @@ export const fetchUsers = async ({
   sortBy?: SortOrder;
 }) => {
   try {
+    connectToDB();
+
     const skipAmount = pageSize && pageNumber ? pageSize * (pageNumber - 1) : 0;
 
     const query: FilterQuery<typeof User> = {
@@ -107,5 +110,30 @@ export const fetchUsers = async ({
   } catch (error) {
     console.log(error);
     throw new Error("Failed to fetch the users.");
+  }
+};
+
+export const fetchUserThreads = async (accountId: string) => {
+  try {
+    connectToDB();
+
+    const userThreads = await User.findOne({ id: accountId }).populate({
+      path: "threads",
+      model: Thread,
+      populate: {
+        path: "children",
+        model: Thread,
+        populate: {
+          path: "author",
+          model: User,
+          select: "_id id name",
+        },
+      },
+    });
+
+    return userThreads;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to fetch the threads.");
   }
 };

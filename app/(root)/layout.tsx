@@ -6,6 +6,7 @@ import { dark } from "@clerk/themes";
 import LeftSidebar from "@/components/common/LeftSidebar";
 import RightSidebar from "@/components/common/RightSidebar";
 import Bottombar from "@/components/common/Bottombar";
+import Topbar from "@/components/common/Topbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({
     >
       <html lang="en">
         <body className={inter.className}>
+          <Topbar />
           <main className="flex flex-row">
             <LeftSidebar />
             <section className="main-container">
