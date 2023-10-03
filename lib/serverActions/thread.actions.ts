@@ -178,12 +178,69 @@ export const fetchActivityOnAThread = async (userId: string) => {
   }
 };
 
-export const deleteThread = async () => {
+export const deleteThread = async (threadId: string, path: string) => {
+  // Delete a thread and update all other threads and users in the database to reflect the deletion.
   try {
     connectToDB();
 
-    // delete the thread
-    // update user and thread
+    // Check thread whether thread exists or not
+
+    const thread = await Thread.findById(threadId);
+
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+
+    // Delete thread
+
+    await Thread.deleteOne({ _id: threadId });
+
+    // Update the places in the database where the thread was a children.
+
+    await Thread.updateMany(
+      {
+        children: {
+          $elemMatch: {
+            _id: threadId,
+          },
+        },
+      },
+      {
+        $pull: {
+          children: threadId,
+        },
+      }
+    );
+
+    // Update the places in the database where the thread was a parent.
+
+    await Thread.updateMany(
+      {
+        parentId: threadId,
+      },
+      {
+        $set: {
+          parentId: null,
+        },
+      }
+    );
+
+    // Update the user's threads to remove the deleted thread.
+
+    await User.updateOne(
+      {
+        _id: thread.author,
+      },
+      {
+        $pull: {
+          threads: threadId,
+        },
+      }
+    );
+
+    console.log("Successfully deleted the thread");
+
+    revalidatePath(path);
   } catch (error: any) {
     console.log(error);
     throw new Error("Failed to delete the thread." + error.message);

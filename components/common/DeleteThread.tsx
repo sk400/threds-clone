@@ -1,5 +1,6 @@
 "use client";
 
+import { deleteThread } from "@/lib/serverActions/thread.actions";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -19,6 +20,7 @@ const DeleteThread = ({
   isComment,
 }: Props) => {
   const pathname = usePathname();
+  const router = useRouter();
 
   if (currentUserId !== authorId || pathname === "/") return null;
 
@@ -29,12 +31,12 @@ const DeleteThread = ({
       width={18}
       height={18}
       className="cursor-pointer object-contain"
-      //   onClick={async () => {
-      //     // await deleteThread(JSON.parse(threadId), pathname);
-      //     // if (!parentId || !isComment) {
-      //     //   router.push("/");
-      //     // }
-      //   }}
+      onClick={async () => {
+        await deleteThread(JSON.parse(threadId), pathname);
+        if (!parentId || !isComment) {
+          router.push("/");
+        }
+      }}
     />
   );
 };
