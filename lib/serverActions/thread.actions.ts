@@ -154,6 +154,30 @@ export const addCommentToThread = async ({
   }
 };
 
+export const fetchActivityOnAThread = async (userId: string) => {
+  try {
+    const allUserThreads = await Thread.find({ author: userId });
+
+    const replies = await Thread.find({
+      parentId: {
+        $in: allUserThreads.map((thread) => thread._id),
+      },
+      author: {
+        $ne: userId,
+      },
+    }).populate({
+      path: "author",
+      model: User,
+      select: "image name",
+    });
+
+    return replies;
+  } catch (error: any) {
+    console.log(error);
+    throw new Error("Failed to fetch the activities" + error.message);
+  }
+};
+
 export const deleteThread = async () => {
   try {
     connectToDB();

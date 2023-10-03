@@ -26,10 +26,9 @@ interface Result {
 interface Props {
   currentUserId: string;
   accountId: string;
-  accountType: string;
 }
 
-const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
+const ThreadsTab = async ({ currentUserId, accountId }: Props) => {
   const result: Result = await fetchUserThreads(accountId);
 
   return (

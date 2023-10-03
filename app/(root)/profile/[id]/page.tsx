@@ -60,11 +60,7 @@ const Profile = async ({ params }: Params) => {
               className="w-full text-light-1"
             >
               {/* @ts-ignore */}
-              <ThreadsTab
-                currentUserId={user.id}
-                accountId={userInfo.id}
-                accountType="User"
-              />
+              <ThreadsTab currentUserId={user.id} accountId={userInfo.id} />
             </TabsContent>
           ))}
         </Tabs>
